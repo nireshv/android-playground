@@ -32,7 +32,7 @@ class PostDeleteViewModel @Inject constructor(
                 viewModelScope.launch {
                     val state = _state.value
                     val response = repo.deletePost(state.userId.toInt())
-                    Log.w("Tag", "Delete response: ${response.status}")
+                    Log.w("Tag", "Delete response: $response")
                     _event.send(DeleteEvent.Back)
                 }
             }

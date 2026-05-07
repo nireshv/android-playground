@@ -40,7 +40,7 @@ fun ScreenNavigation() {
 
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screens.ContactList) {
+    NavHost(navController = navController, startDestination = Screens.PostOptions) {
         composable<Screens.PostOptions> {
             PostOptions {
                 when (it) {

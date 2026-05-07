@@ -1,5 +1,6 @@
 package com.uncledroid.playground.data.remote
 
+import com.uncledroid.playground.domain.model.PatchPost
 import com.uncledroid.playground.domain.model.Post
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -13,6 +14,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -46,6 +48,12 @@ class PostRepositoryImplTest {
     }) {
         install(ContentNegotiation) { json(json) }
 //        install(DefaultRequest) { url("http://localhost/") }
+    }
+
+    private fun mockFailingClient() = HttpClient(MockEngine {
+        throw IOException("Network failure")
+    }) {
+        install(ContentNegotiation) { json(json) }
     }
 
     // region getPosts
@@ -82,14 +90,13 @@ class PostRepositoryImplTest {
                 params = it.url.parameters.entries().associate { e -> e.key to e.value }
             },
         )
-        PostRepositoryImpl(client).getPosts(userId = -1)
+        PostRepositoryImpl(client).getPosts(userId = null)
         assertTrue("userId should not be present", !params.containsKey("userId"))
     }
 
     @Test
     fun `getPosts returns empty list on error`() = runTest {
-        val client = mockClient(status = HttpStatusCode.InternalServerError, content = "invalid")
-        assertTrue(PostRepositoryImpl(client).getPosts().isEmpty())
+        assertTrue(PostRepositoryImpl(mockFailingClient()).getPosts().isEmpty())
     }
 
     // endregion
@@ -117,8 +124,7 @@ class PostRepositoryImplTest {
 
     @Test
     fun `getPost returns null on error`() = runTest {
-        val client = mockClient(status = HttpStatusCode.NotFound, content = "invalid")
-        assertNull(PostRepositoryImpl(client).getPost(999))
+        assertNull(PostRepositoryImpl(mockFailingClient()).getPost(999))
     }
 
     // endregion
@@ -141,8 +147,7 @@ class PostRepositoryImplTest {
 
     @Test
     fun `createPost returns null on error`() = runTest {
-        val client = mockClient(status = HttpStatusCode.BadRequest, content = "invalid")
-        assertNull(PostRepositoryImpl(client).createPost(samplePost))
+        assertNull(PostRepositoryImpl(mockFailingClient()).createPost(samplePost))
     }
 
     // endregion
@@ -165,8 +170,7 @@ class PostRepositoryImplTest {
 
     @Test
     fun `putPost returns null on error`() = runTest {
-        val client = mockClient(status = HttpStatusCode.NotFound, content = "invalid")
-        assertNull(PostRepositoryImpl(client).putPost(samplePost))
+        assertNull(PostRepositoryImpl(mockFailingClient()).putPost(samplePost))
     }
 
     // endregion
@@ -181,7 +185,7 @@ class PostRepositoryImplTest {
             content = postJson(id = 2, title = "updated"),
             onRequest = { method = it.method; path = it.url.encodedPath },
         )
-        val result = PostRepositoryImpl(client).patchPost(2, mapOf("title" to "updated"))
+        val result = PostRepositoryImpl(client).patchPost(2, PatchPost(title = "updated"))
         assertEquals(HttpMethod.Patch, method)
         assertEquals("/posts/2", path)
         assertEquals("updated", result?.title)
@@ -189,8 +193,7 @@ class PostRepositoryImplTest {
 
     @Test
     fun `patchPost returns null on error`() = runTest {
-        val client = mockClient(status = HttpStatusCode.InternalServerError, content = "invalid")
-        assertNull(PostRepositoryImpl(client).patchPost(1, mapOf("title" to "t")))
+        assertNull(PostRepositoryImpl(mockFailingClient()).patchPost(1, PatchPost(title = "t")))
     }
 
     // endregion
@@ -209,7 +212,7 @@ class PostRepositoryImplTest {
         val response = PostRepositoryImpl(client).deletePost(4)
         assertEquals(HttpMethod.Delete, method)
         assertEquals("/posts/4", path)
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(true, response)
     }
 
     // endregion

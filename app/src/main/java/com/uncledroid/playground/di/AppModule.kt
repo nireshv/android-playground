@@ -2,9 +2,11 @@ package com.uncledroid.playground.di
 
 import com.uncledroid.playground.common.CoroutineDispatchers
 import com.uncledroid.playground.common.DefaultCoroutineDispatchers
+import com.uncledroid.playground.data.remote.PostFlowRepositoryImpl
 import com.uncledroid.playground.data.remote.PostRepositoryImpl
 import com.uncledroid.playground.data.repository.ContactRepositoryImpl
 import com.uncledroid.playground.domain.repository.ContactRepository
+import com.uncledroid.playground.domain.repository.PostFlowRepository
 import com.uncledroid.playground.domain.repository.PostRepository
 import dagger.Binds
 import dagger.Module
@@ -38,6 +40,14 @@ abstract class AppModule {
     @Binds
     abstract fun bindCoroutineDispatchers(dispatchers: DefaultCoroutineDispatchers): CoroutineDispatchers
 
+    @Singleton
+    @Binds
+    abstract fun bindPostRepository(repo: PostRepositoryImpl): PostRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindPostFlowRepository(repo: PostFlowRepositoryImpl): PostFlowRepository
+
     companion object {
         @Singleton
         @Provides
@@ -47,30 +57,28 @@ abstract class AppModule {
 
         @Singleton
         @Provides
-        fun providePostRepository(): PostRepository {
-            return PostRepositoryImpl(
-                HttpClient {
+        fun provideHttpClient(): HttpClient {
+            return HttpClient {
 
-                    install(ContentNegotiation) {
-                        json(Json { ignoreUnknownKeys = true })
-                    }
-
-                    install(HttpTimeout) {
-                        socketTimeoutMillis = 10000
-                        requestTimeoutMillis = 10000
-                        connectTimeoutMillis = 10000
-                    }
-
-                    install(DefaultRequest) {
-                        url {
-                            host = "jsonplaceholder.typicode.com"
-                            protocol = URLProtocol.HTTPS
-                        }
-                        header(HttpHeaders.Authorization, "fkasjflkasjfasklfd")
-                        contentType(ContentType.Application.Json)
-                    }
+                install(ContentNegotiation) {
+                    json(Json { ignoreUnknownKeys = true })
                 }
-            )
+
+                install(HttpTimeout) {
+                    socketTimeoutMillis = 10000
+                    requestTimeoutMillis = 10000
+                    connectTimeoutMillis = 10000
+                }
+
+                install(DefaultRequest) {
+                    url {
+                        host = "jsonplaceholder.typicode.com"
+                        protocol = URLProtocol.HTTPS
+                    }
+                    header(HttpHeaders.Authorization, "fkasjflkasjfasklfd")
+                    contentType(ContentType.Application.Json)
+                }
+            }
         }
     }
 

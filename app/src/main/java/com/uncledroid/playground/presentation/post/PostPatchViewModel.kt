@@ -3,7 +3,8 @@ package com.uncledroid.playground.presentation.post
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.uncledroid.playground.domain.repository.PostRepository
+import com.uncledroid.playground.domain.model.PatchPost
+import com.uncledroid.playground.domain.repository.PostFlowRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PostPatchViewModel @Inject constructor(
-    private val repo: PostRepository
+    private val repo: PostFlowRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(PatchState())
     val state = _state.asStateFlow()
@@ -37,8 +38,17 @@ class PostPatchViewModel @Inject constructor(
             PatchAction.OnSubmit -> {
                 val state = _state.value
                 viewModelScope.launch {
-                    val response = repo.patchPost(state.userId.toInt(), mapOf("body" to state.body))
-                    Log.w("TAG", "Patch response: $response")
+                    val response = repo.patchPost(state.userId.toInt(), PatchPost(body = state.body))
+                    when (response) {
+                        is com.uncledroid.playground.common.Response.Error -> {
+                            Log.e("TAG", "Patch response Error: ${response.message}")
+                        }
+
+                        is com.uncledroid.playground.common.Response.Success -> {
+                            Log.d("TAG", "Patch response Success: ${response.data}")
+                        }
+                    }
+//                    Log.w("TAG", "Patch response: $response")
                     _event.send(PatchEvent.Back)
                 }
             }

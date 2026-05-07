@@ -2,8 +2,10 @@ package com.uncledroid.playground.data.remote
 
 import android.util.Log
 import com.uncledroid.playground.data.remote.dto.PostResponse
+import com.uncledroid.playground.data.remote.mapper.toPatchPostRequest
 import com.uncledroid.playground.data.remote.mapper.toPost
 import com.uncledroid.playground.data.remote.mapper.toPostRequest
+import com.uncledroid.playground.domain.model.PatchPost
 import com.uncledroid.playground.domain.model.Post
 import com.uncledroid.playground.domain.repository.PostRepository
 import io.ktor.client.HttpClient
@@ -15,25 +17,25 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import kotlinx.io.IOException
+import javax.inject.Inject
 
-class PostRepositoryImpl(
+class PostRepositoryImpl @Inject constructor(
     private val client: HttpClient
 ) : PostRepository {
 
-    override suspend fun getPosts(userId: Int): List<Post> {
+    override suspend fun getPosts(userId: Int?): List<Post> {
         return try {
             client
                 .get("/posts") {
-                    if (userId != -1) {
-                        parameter("userId", userId)
-                    }
+                    userId?.let { parameter("userId", userId) }
                 }
                 .body<List<PostResponse>>()
                 .map { it.toPost() }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e("Error", "getPosts filter:$userId", e)
             emptyList()
         }
@@ -45,7 +47,7 @@ class PostRepositoryImpl(
                 .get("/posts/$id")
                 .body<PostResponse>()
                 .toPost()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e("Error", "getPost $id", e)
             null
         }
@@ -60,7 +62,7 @@ class PostRepositoryImpl(
                 }
                 .body<PostResponse>()
                 .toPost()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e("Error", "createPost", e)
             null
         }
@@ -75,29 +77,29 @@ class PostRepositoryImpl(
                 }
                 .body<PostResponse>()
                 .toPost()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e("Error", "putPost", e)
             null
         }
     }
 
-    override suspend fun patchPost(id: Int, map: Map<String, String>): Post? {
+    override suspend fun patchPost(id: Int, patch: PatchPost): Post? {
         return try {
             client
                 .patch("/posts/$id") {
                     contentType(ContentType.Application.Json)
-                    setBody(map)
+                    setBody(patch.toPatchPostRequest())
                 }
                 .body<PostResponse>()
                 .toPost()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             Log.e("Error", "patchPost", e)
             null
         }
     }
 
-    override suspend fun deletePost(id: Int): HttpResponse {
-        return client.delete("/posts/$id")
+    override suspend fun deletePost(id: Int): Boolean {
+        return client.delete("/posts/$id").status == HttpStatusCode.OK
     }
 
 

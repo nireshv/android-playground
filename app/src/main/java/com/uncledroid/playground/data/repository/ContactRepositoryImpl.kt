@@ -48,7 +48,6 @@ class ContactRepositoryImpl @Inject constructor(
         return combine(_refresh) {
             getContacts().firstOrNull { it.id == id }
         }.flowOn(dispatchers.io)
-            .stateIn(scope, SharingStarted.WhileSubscribed(500), null)
     }
 
     override suspend fun update(contact: Contact) = withContext(dispatchers.io) {

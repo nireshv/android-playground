@@ -1,8 +1,8 @@
 package com.uncledroid.playground.presentation.post
 
+import com.uncledroid.playground.domain.model.PatchPost
 import com.uncledroid.playground.domain.model.Post
 import com.uncledroid.playground.domain.repository.PostRepository
-import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -104,9 +104,9 @@ private class FakePostRepository : PostRepository {
         return post
     }
 
-    override suspend fun getPosts(userId: Int): List<Post> = emptyList()
+    override suspend fun getPosts(userId: Int?): List<Post> = emptyList()
     override suspend fun getPost(id: Int): Post? = null
     override suspend fun putPost(post: Post): Post? = null
-    override suspend fun patchPost(id: Int, map: Map<String, String>): Post? = null
-    override suspend fun deletePost(id: Int): HttpResponse = TODO()
+    override suspend fun patchPost(id: Int, patch: PatchPost): Post? = null
+    override suspend fun deletePost(id: Int): Boolean = TODO()
 }
