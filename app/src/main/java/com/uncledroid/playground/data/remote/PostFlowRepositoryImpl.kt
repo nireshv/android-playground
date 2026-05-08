@@ -1,5 +1,6 @@
 package com.uncledroid.playground.data.remote
 
+import android.util.Log
 import com.uncledroid.playground.common.CoroutineDispatchers
 import com.uncledroid.playground.common.Response
 import com.uncledroid.playground.data.remote.dto.PostResponse
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -50,6 +52,7 @@ class PostFlowRepositoryImpl @Inject constructor(
     private suspend fun retry(cause: Throwable, attempt: Long): Boolean {
         return if (cause is IOException && attempt < 3) {
             val newDelay = 1000L * 2.0.pow(attempt.toDouble()).toLong()
+            Log.w("Tag", "Retry waiting for $newDelay, attempt $attempt, ${cause.message}")
             delay(newDelay)
             true
         } else {
@@ -83,15 +86,18 @@ class PostFlowRepositoryImpl @Inject constructor(
             .flowOn(dispatchers.io)
     }
 
-    override fun getPostsForUser(userId: Int): Flow<Response<List<Post>>> {
-        return combine(_refresh) {
+    override fun getPostsForUser(userId: Int?): Flow<Response<List<Post>>> {
+        Log.w("Tag", "getPostsForUser userId:$userId")
+        return combine(_refresh) { (ref) ->
+            Log.w("Tag", "getPostsForUser $ref, userId:$userId")
             client
                 .get("/posts") {
-                    parameter("userId", userId)
+                    userId?.let { parameter("userId", userId) }
                 }
                 .body<List<PostResponse>>()
                 .map { it.toPost() }
         }
+            .onEach { Log.w("Tag", "got result getPostsForUser: ${it.size}") }
             .retryWhen { cause, attempt -> retry(cause, attempt) }
             .map<List<Post>, Response<List<Post>>> { Response.Success(it) }
             .catch { emit(Response.Error(it.message ?: "Something went wrong")) }

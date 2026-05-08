@@ -60,7 +60,7 @@ fun ScreenNavigation() {
         composable<Screens.PostList> {
             val viewModel = hiltViewModel<PostListViewModel>()
             val state by viewModel.state.collectAsStateWithLifecycle()
-            PostListScreen(state = state, onAction = {})
+            PostListScreen(state = state, viewModel::onAction)
         }
         composable<Screens.PostPut> {
             val viewModel = hiltViewModel<PostPutViewModel>()

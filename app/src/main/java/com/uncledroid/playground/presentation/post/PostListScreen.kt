@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 fun PostListScreen(state: ListState, onAction: (ListAction) -> Unit) {
     Column {
         Text("Post List screen", modifier = Modifier)
+        TextField(
+            value = state.search,
+            label = { Text("Search") },
+            onValueChange = { onAction(ListAction.OnSearch(it)) }
+        )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(state.list) {
                 ListItem(

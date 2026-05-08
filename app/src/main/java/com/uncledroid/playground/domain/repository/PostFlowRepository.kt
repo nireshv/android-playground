@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface PostFlowRepository {
     val allPosts: Flow<Response<List<Post>>>
     fun getPost(id: Int): Flow<Response<Post>>
-    fun getPostsForUser(userId: Int): Flow<Response<List<Post>>>
+    fun getPostsForUser(userId: Int? = null): Flow<Response<List<Post>>>
     suspend fun createPost(post: Post): Response<Post>
     suspend fun updatePost(post: Post): Response<Post>
     suspend fun patchPost(id: Int, patch: PatchPost): Response<Post>
