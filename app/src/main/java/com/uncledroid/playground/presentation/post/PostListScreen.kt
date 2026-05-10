@@ -23,26 +23,30 @@ fun PostListScreen(state: ListState, onAction: (ListAction) -> Unit) {
             label = { Text("Search") },
             onValueChange = { onAction(ListAction.OnSearch(it)) }
         )
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(state.list) {
-                ListItem(
-                    modifier = Modifier.clickable(onClick = { onAction(ListAction.OnPostSelected(it.id)) }),
-                    headlineContent = {
-                        Row(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("id: ${it.id}")
-                            Text("userId: ${it.userId}")
+        if (state.isLoading) {
+            Text("Loading...")
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(state.list) {
+                    ListItem(
+                        modifier = Modifier.clickable(onClick = { onAction(ListAction.OnPostSelected(it.id)) }),
+                        headlineContent = {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("id: ${it.id}")
+                                Text("userId: ${it.userId}")
+                            }
+                        },
+                        supportingContent = {
+                            Column {
+                                Text(fontWeight = FontWeight.Bold, text = it.title)
+                                Text(it.body)
+                            }
                         }
-                    },
-                    supportingContent = {
-                        Column {
-                            Text(fontWeight = FontWeight.Bold, text = it.title)
-                            Text(it.body)
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }

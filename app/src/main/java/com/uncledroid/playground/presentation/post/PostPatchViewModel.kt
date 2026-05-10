@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uncledroid.playground.domain.model.PatchPost
+import com.uncledroid.playground.domain.model.Response
 import com.uncledroid.playground.domain.repository.PostFlowRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -40,12 +41,15 @@ class PostPatchViewModel @Inject constructor(
                 viewModelScope.launch {
                     val response = repo.patchPost(state.userId.toInt(), PatchPost(body = state.body))
                     when (response) {
-                        is com.uncledroid.playground.common.Response.Error -> {
+                        is Response.Loading -> _state.update { it.copy(isLoading = true) }
+                        is Response.Error -> {
                             Log.e("TAG", "Patch response Error: ${response.message}")
+                            _state.update { it.copy(isLoading = false) }
                         }
 
-                        is com.uncledroid.playground.common.Response.Success -> {
+                        is Response.Success -> {
                             Log.d("TAG", "Patch response Success: ${response.data}")
+                            _state.update { it.copy(isLoading = false) }
                         }
                     }
 //                    Log.w("TAG", "Patch response: $response")
@@ -57,8 +61,9 @@ class PostPatchViewModel @Inject constructor(
 }
 
 data class PatchState(
+    val isLoading: Boolean = false,
     val userId: String = "",
-    val body: String = ""
+    val body: String = "",
 )
 
 sealed interface PatchAction {

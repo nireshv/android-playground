@@ -1,5 +1,6 @@
 package com.uncledroid.playground.di
 
+import com.uncledroid.playground.BuildConfig
 import com.uncledroid.playground.common.CoroutineDispatchers
 import com.uncledroid.playground.common.DefaultCoroutineDispatchers
 import com.uncledroid.playground.data.remote.PostFlowRepositoryImpl
@@ -74,6 +75,7 @@ abstract class AppModule {
                     url {
                         host = "jsonplaceholder.typicode.com"
                         protocol = URLProtocol.HTTPS
+                        parameters.append("apikey", BuildConfig.API_KEY)
                     }
                     header(HttpHeaders.Authorization, "fkasjflkasjfasklfd")
                     contentType(ContentType.Application.Json)

@@ -1,8 +1,8 @@
 package com.uncledroid.playground.domain.repository
 
-import com.uncledroid.playground.common.Response
 import com.uncledroid.playground.domain.model.PatchPost
 import com.uncledroid.playground.domain.model.Post
+import com.uncledroid.playground.domain.model.Response
 import kotlinx.coroutines.flow.Flow
 
 
