@@ -1,12 +1,15 @@
 package com.uncledroid.playground.presentation.post
 
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uncledroid.playground.domain.model.Post
 import com.uncledroid.playground.domain.model.Response
 import com.uncledroid.playground.domain.repository.PostFlowRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,7 +54,7 @@ class PostListViewModel @Inject constructor(
 
                         is Response.Success -> {
                             Log.e("Tag", "Response.Success Post List: ${postRes.data.size}")
-                            _state.update { it.copy(list = postRes.data, isLoading = false) }
+                            _state.update { it.copy(list = postRes.data.toImmutableList(), isLoading = false) }
                         }
 
                         is Response.Loading -> _state.update { it.copy(isLoading = true) }
@@ -74,9 +77,10 @@ class PostListViewModel @Inject constructor(
     }
 }
 
+@Immutable
 data class ListState(
     val isLoading: Boolean = false,
-    val list: List<Post> = emptyList(),
+    val list: ImmutableList<Post> = emptyList<Post>().toImmutableList(),
     val search: String = "",
 )
 
