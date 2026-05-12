@@ -40,6 +40,11 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+        debug {
+            enableUnitTestCoverage = true      // For local unit tests
+            enableAndroidTestCoverage = true   // For instrumented tests
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -86,6 +91,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
